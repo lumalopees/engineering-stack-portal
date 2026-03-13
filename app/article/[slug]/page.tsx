@@ -1,5 +1,9 @@
-// Página de artigo — SEO completo
+export default async function ArticlePage({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-export default function ArticlePage() {
-  return null
+  return <main>Article: {slug}</main>;
 }

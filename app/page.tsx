@@ -1,5 +1,3 @@
-// Home — listagem de artigos
-
 export default function HomePage() {
-  return null
+  return <main>Engineering Stack Portal</main>;
 }

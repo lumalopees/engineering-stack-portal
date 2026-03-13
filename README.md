@@ -37,6 +37,29 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 
 ---
 
+## Phase 1 Progress
+
+| Etapa | PT-BR | EN | Status |
+|------|-------|----|--------|
+| 1.1 | Repositório Git criado no GitHub sem README automático. | GitHub repository created without auto-generated README. | Done |
+| 1.2 | Projeto inicializado com Next.js + TypeScript usando `app/` router. | Project initialized with Next.js + TypeScript using the `app/` router. | Done |
+| 1.3 | Configurações técnicas iniciais aplicadas: ESLint, Prettier, `tsconfig` strict e limpeza de boilerplate. | Initial technical setup applied: ESLint, Prettier, strict `tsconfig`, and boilerplate cleanup. | Done |
+
+### Decision Log (ADR-lite)
+
+| ID | Decision (PT-BR) | Why / Rationale (PT-BR) | Risk / Trade-off (PT-BR) | Status |
+|----|------------------|-------------------------|---------------------------|--------|
+| D-001 | Usar Webpack nos scripts de `dev` e `build` (`--webpack`). | Evita falha do Turbopack em caminhos Windows com acentuação e mantém o ambiente estável para desenvolvimento. | Build um pouco mais lento que Turbopack em alguns cenários; reavaliar quando o bug for corrigido. | Applied |
+| D-002 | Configurar `outputFileTracingRoot` no `next.config.ts`. | Remove aviso de múltiplos lockfiles e melhora previsibilidade do build no ambiente local. | Pode exigir revisão se a estrutura de monorepo mudar no futuro. | Applied |
+| D-003 | Manter scaffold inicial minimalista com placeholders funcionais. | Prioriza validação da base técnica (rotas, build e lint) antes de investir em UI e integração real. | A interface inicial parece simples demais para demonstração visual imediata. | Applied |
+
+**Template (for next decisions):**  
+`Decision:` ... | `Why:` ... | `Risk:` ... | `Status:` ...
+
+**EN note:** Every relevant technical decision must include Decision + Why + Risk (ADR-lite).
+
+---
+
 ## Repository Structure
 
 > Estrutura inicial sem implementação funcional.  
@@ -90,8 +113,8 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 
 | PT-BR | EN |
 |-------|----|
-| Nenhuma integração, lógica de dados ou funcionalidade foi implementada até o momento. | No integrations, data logic, or functional features have been implemented yet. |
-| Esta estrutura representa exclusivamente o planejamento técnico inicial. | This structure represents only the initial technical planning stage. |
+| Base técnica inicial concluída: projeto Next.js em funcionamento, rotas principais ativas e endpoint de preview com resposta placeholder. | Initial technical foundation completed: running Next.js project, main routes active, and preview endpoint returning placeholders. |
+| Integrações reais com CMS/analytics e UI final ainda não foram implementadas. | Real CMS/analytics integrations and final UI are not implemented yet. |
 
 ---
 
@@ -99,8 +122,8 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 
 | PT-BR | EN |
 |-------|----|
-| Definição da stack técnica final | Define the final technical stack |
-| Implementação das páginas públicas | Implement public pages |
-| Integração com CMS headless | Integrate with a headless CMS |
-| Estratégia de SEO e analytics | Define SEO and analytics strategy |
-| Escrita de testes automatizados | Write automated tests |
+| Implementação da interface pública da Home e páginas internas | Implement the public UI for Home and inner pages |
+| Evolução do sistema de preview com validação e segurança | Evolve the preview system with validation and security |
+| Implementação da camada de integração real com CMS headless | Implement the real headless CMS integration layer |
+| Definição e implementação de eventos de analytics | Define and implement analytics events |
+| Escrita e execução de testes automatizados críticos | Write and run critical automated tests |

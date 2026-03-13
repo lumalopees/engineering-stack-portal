@@ -1,9 +1,7 @@
-// API route — preview de conteúdo
-
 export async function GET() {
-  return null
+  return Response.json({ preview: false, message: "Preview endpoint placeholder" });
 }
 
 export async function POST() {
-  return null
+  return Response.json({ preview: true, message: "Preview endpoint placeholder" });
 }

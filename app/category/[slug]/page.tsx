@@ -1,5 +1,9 @@
-// Página de categoria
+export default async function CategoryPage({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-export default function CategoryPage() {
-  return null
+  return <main>Category: {slug}</main>;
 }
