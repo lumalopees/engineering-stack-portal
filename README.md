@@ -45,6 +45,13 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | 1.2 | Projeto inicializado com Next.js + TypeScript usando `app/` router. | Project initialized with Next.js + TypeScript using the `app/` router. | Done |
 | 1.3 | Configurações técnicas iniciais aplicadas: ESLint, Prettier, `tsconfig` strict e limpeza de boilerplate. | Initial technical setup applied: ESLint, Prettier, strict `tsconfig`, and boilerplate cleanup. | Done |
 
+## Phase 2 Progress
+
+| Etapa | PT-BR | EN | Status |
+|------|-------|----|--------|
+| 2.1 | Estrutura de pastas definida para separar rotas, componentes, integrações, serviços, tipos e testes. | Folder structure defined to separate routes, components, integrations, services, types, and tests. | Done |
+| 2.2 | Modelo de domínio inicial definido com tipos `Article`, `Category` e `Author`. | Initial domain model defined with `Article`, `Category`, and `Author` types. | Done |
+
 ### Decision Log (ADR-lite)
 
 | ID | Decision (PT-BR) | Why / Rationale (PT-BR) | Risk / Trade-off (PT-BR) | Status |
@@ -52,6 +59,8 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | D-001 | Usar Webpack nos scripts de `dev` e `build` (`--webpack`). | Evita falha do Turbopack em caminhos Windows com acentuação e mantém o ambiente estável para desenvolvimento. | Build um pouco mais lento que Turbopack em alguns cenários; reavaliar quando o bug for corrigido. | Applied |
 | D-002 | Configurar `outputFileTracingRoot` no `next.config.ts`. | Remove aviso de múltiplos lockfiles e melhora previsibilidade do build no ambiente local. | Pode exigir revisão se a estrutura de monorepo mudar no futuro. | Applied |
 | D-003 | Manter scaffold inicial minimalista com placeholders funcionais. | Prioriza validação da base técnica (rotas, build e lint) antes de investir em UI e integração real. | A interface inicial parece simples demais para demonstração visual imediata. | Applied |
+| D-004 | Introduzir a pasta `services/` com contrato `ContentRepository` desacoplado da fonte de dados. | Permite evoluir de mock para CMS real sem acoplar páginas ao mecanismo de fetch. | Pode adicionar abstração cedo demais; precisa manter simplicidade nas próximas fases. | Applied |
+| D-005 | Definir tipos de domínio explícitos (`Article`, `Category`, `Author`) em `types/`. | Reforça design orientado a domínio e cria linguagem ubíqua antes da integração com CMS. | Tipos podem mudar quando o schema real do CMS entrar; exige versionamento cuidadoso. | Applied |
 
 **Template (for next decisions):**  
 `Decision:` ... | `Why:` ... | `Risk:` ... | `Status:` ...
@@ -62,8 +71,8 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 
 ## Repository Structure
 
-> Estrutura inicial sem implementação funcional.  
-> Initial scaffold without functional implementation.
+> Estrutura inicial com base técnica funcional e arquitetura em evolução.  
+> Initial scaffold with a functional technical baseline and evolving architecture.
 
 ### Pages (App)
 
@@ -74,6 +83,13 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | Article SEO | `app/article/[slug]/metadata.ts` | Metadata e SEO do artigo | Article metadata and SEO |
 | Category | `app/category/[slug]/page.tsx` | Página de categoria | Category page |
 | Layout | `app/layout.tsx` | Layout raiz | Root layout |
+
+### Reusable Components
+
+| File | PT-BR | EN |
+|------|-------|----|
+| `components/index.ts` | Barrel de exportação de componentes | Components export barrel |
+| `components/ui/page-container.tsx` | Componente base de container de página | Base page container component |
 
 ### Preview System
 
@@ -90,6 +106,23 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | `lib/cms/index.ts` | Entrada do módulo CMS | CMS module entry point |
 | `lib/cms/client.ts` | Cliente do CMS | CMS client |
 | `lib/cms/queries.ts` | Queries / fetch de conteúdo | Content queries/fetching |
+
+### Data Services
+
+| File | PT-BR | EN |
+|------|-------|----|
+| `services/content-repository.ts` | Contrato de repositório de conteúdo | Content repository contract |
+| `services/in-memory-content-repository.ts` | Implementação in-memory para desenvolvimento inicial | In-memory implementation for early development |
+| `services/index.ts` | Barrel de exportação de serviços | Services export barrel |
+
+### Shared Domain Types
+
+| File | PT-BR | EN |
+|------|-------|----|
+| `types/article.ts` | Tipos de domínio para artigo e SEO | Domain types for article and SEO |
+| `types/category.ts` | Tipo de domínio para categoria | Domain type for category |
+| `types/author.ts` | Tipo de domínio para autor | Domain type for author |
+| `types/index.ts` | Barrel de exportação de tipos | Types export barrel |
 
 ### Analytics
 
@@ -113,7 +146,7 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 
 | PT-BR | EN |
 |-------|----|
-| Base técnica inicial concluída: projeto Next.js em funcionamento, rotas principais ativas e endpoint de preview com resposta placeholder. | Initial technical foundation completed: running Next.js project, main routes active, and preview endpoint returning placeholders. |
+| Base técnica inicial concluída: projeto Next.js em funcionamento, rotas principais ativas, endpoint de preview placeholder e modelo de domínio inicial implementado. | Initial technical foundation completed: running Next.js project, main routes active, preview endpoint placeholder, and initial domain model implemented. |
 | Integrações reais com CMS/analytics e UI final ainda não foram implementadas. | Real CMS/analytics integrations and final UI are not implemented yet. |
 
 ---
@@ -122,8 +155,8 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 
 | PT-BR | EN |
 |-------|----|
-| Implementação da interface pública da Home e páginas internas | Implement the public UI for Home and inner pages |
+| Implementação da interface pública da Home e páginas internas (design system inicial) | Implement the public UI for Home and inner pages (initial design system) |
 | Evolução do sistema de preview com validação e segurança | Evolve the preview system with validation and security |
-| Implementação da camada de integração real com CMS headless | Implement the real headless CMS integration layer |
+| Troca da implementação in-memory por integração real com CMS headless | Replace in-memory implementation with real headless CMS integration |
 | Definição e implementação de eventos de analytics | Define and implement analytics events |
 | Escrita e execução de testes automatizados críticos | Write and run critical automated tests |

@@ -1,9 +1,24 @@
+import { notFound } from "next/navigation";
+import { PageContainer } from "../../../components";
+import { InMemoryContentRepository } from "../../../services";
+
 export default async function CategoryPage({
   params
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const repository = new InMemoryContentRepository();
+  const category = await repository.getCategoryBySlug(slug);
 
-  return <main>Category: {slug}</main>;
+  if (!category) {
+    notFound();
+  }
+
+  return (
+    <PageContainer>
+      <h1>{category.name}</h1>
+      <p>{category.description}</p>
+    </PageContainer>
+  );
 }
