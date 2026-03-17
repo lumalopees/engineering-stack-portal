@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageContainer } from "../../../components";
-import { InMemoryContentRepository } from "../../../services";
+import { getContentRepository } from "../../../services";
 
 export default async function CategoryPage({
   params
@@ -8,7 +8,7 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const repository = new InMemoryContentRepository();
+  const repository = getContentRepository();
   const category = await repository.getCategoryBySlug(slug);
 
   if (!category) {

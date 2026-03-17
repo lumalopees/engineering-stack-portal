@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageContainer } from "../../../components";
-import { InMemoryContentRepository } from "../../../services";
+import { getContentRepository } from "../../../services";
 
 export default async function ArticlePage({
   params
@@ -8,7 +8,7 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const repository = new InMemoryContentRepository();
+  const repository = getContentRepository();
   const article = await repository.getArticleBySlug(slug);
 
   if (!article) {

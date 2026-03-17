@@ -1,8 +1,8 @@
 import { PageContainer } from "../components";
-import { InMemoryContentRepository } from "../services";
+import { getContentRepository } from "../services";
 
 export default async function HomePage() {
-  const repository = new InMemoryContentRepository();
+  const repository = getContentRepository();
   const articles = await repository.getArticles();
 
   return (
