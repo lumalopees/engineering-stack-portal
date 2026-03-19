@@ -5,6 +5,15 @@ function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, "").trim();
 }
 
+function getMetaString(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
 function mapFallbackAuthor(): Author {
   return {
     id: "unknown-author",
@@ -60,9 +69,11 @@ export function mapWpPostToDomain(post: WpPostResponse): Article {
 
   const excerpt = stripHtml(post.excerpt.rendered);
   const content = post.content.rendered;
-  const seoTitle = post.yoast_head_json?.title ?? stripHtml(post.title.rendered);
-  const seoDescription = post.yoast_head_json?.description ?? excerpt;
-  const canonicalUrl = post.yoast_head_json?.canonical;
+  const seoTitle = getMetaString(post.meta?.seo_title) ?? post.yoast_head_json?.title ?? stripHtml(post.title.rendered);
+  const seoDescription =
+    getMetaString(post.meta?.seo_description) ?? post.yoast_head_json?.description ?? excerpt;
+  const canonicalUrl = getMetaString(post.meta?.canonical_url) ?? post.yoast_head_json?.canonical;
+  const ogImageUrl = getMetaString(post.meta?.og_image);
 
   return {
     id: String(post.id),
@@ -77,7 +88,8 @@ export function mapWpPostToDomain(post: WpPostResponse): Article {
     seo: {
       title: seoTitle,
       description: seoDescription,
-      canonicalUrl
+      canonicalUrl,
+      ogImageUrl
     }
   };
 }

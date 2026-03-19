@@ -7,6 +7,7 @@ export interface ArticleSeo {
   title: string;
   description: string;
   canonicalUrl?: string;
+  ogImageUrl?: string;
 }
 
 export interface Article {

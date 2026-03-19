@@ -60,6 +60,15 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | 3.2 | Conteúdo modelado na integração como `Article`, `Category` e `Author` mapeados de entidades WordPress (`posts`, `categories`, `author`). | Content modeled in the integration as `Article`, `Category`, and `Author` mapped from WordPress entities (`posts`, `categories`, `author`). | Done |
 | 3.3 | Camada de acesso ao CMS criada com fetch centralizado, tipagem de payload e tratamento de erro. | CMS access layer created with centralized fetch, typed payloads, and error handling. | Done |
 
+## Phase 4 Progress
+
+| Etapa | PT-BR | EN | Status |
+|------|-------|----|--------|
+| 4.1 | Home com metadata básica, links semânticos e renderização com revalidação periódica (ISR). | Home with basic metadata, semantic links, and periodic revalidation rendering (ISR). | Done |
+| 4.2 | Página de artigo com metadata dinâmica, Open Graph/Twitter cards e estrutura semântica com slug amigável. | Article page with dynamic metadata, Open Graph/Twitter cards, and semantic structure with friendly slug. | Done |
+| 4.3 | `sitemap.xml` e `robots.txt` gerados automaticamente a partir das rotas públicas e conteúdo disponível. | `sitemap.xml` and `robots.txt` automatically generated from public routes and available content. | Done |
+| 4.4 | Campos SEO customizados no WordPress registrados e publicados via REST (`seo_title`, `seo_description`, `canonical_url`, `og_image`) com mapeamento no Next.js. | Custom SEO fields in WordPress registered and exposed via REST (`seo_title`, `seo_description`, `canonical_url`, `og_image`) with mapping in Next.js. | Done |
+
 ### WordPress Validation Snapshot (Local Instance)
 
 Validation base URL used in `.env.local`: `http://localhost:8080`
@@ -72,13 +81,34 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 | 4 | How to Structure Slugs and Taxonomy | Bruno Lima | `how-to-structure-slugs-and-taxonomy` |
 | 5 | Designing an SEO-first Content Platform | Ana Costa | `designing-an-seo-first-content-platform` |
 
+SEO meta runtime check (`meta.seo_title`, `meta.seo_description`, `meta.canonical_url`, `meta.og_image`): **5/5 posts OK**.
+
 ### Local WordPress Runtime
 
 | PT-BR | EN |
 |-------|----|
 | `docker-compose.wordpress.yml` sobe WordPress + MySQL localmente para desenvolvimento e validação da integração. | `docker-compose.wordpress.yml` starts local WordPress + MySQL for development and integration validation. |
-| `scripts/seed-wordpress.sh` instala o CMS (se necessário) e cria 3 autores, 3 categorias e 5 artigos. | `scripts/seed-wordpress.sh` installs the CMS (if needed) and creates 3 authors, 3 categories, and 5 posts. |
+| `scripts/seed-wordpress.sh` instala o CMS (se necessário), cria 3 autores/3 categorias/5 artigos e popula campos SEO customizados. | `scripts/seed-wordpress.sh` installs the CMS (if needed), creates 3 authors/3 categories/5 posts, and populates custom SEO fields. |
 | A API é consumida via `/?rest_route=/wp/v2/...` para funcionar mesmo sem dependência de rewrite/permalink específico. | The API is consumed via `/?rest_route=/wp/v2/...` to work even without permalink/rewrite-specific setup. |
+
+### How to Run Local WordPress
+
+```bash
+# 1) Start WordPress + MySQL
+docker compose -f docker-compose.wordpress.yml up -d
+
+# 2) Seed authors, categories, and posts
+docker compose -f docker-compose.wordpress.yml run --rm --entrypoint sh -v "${PWD}/scripts:/work" wpcli -c "sh /work/seed-wordpress.sh"
+
+# 3) Stop local CMS stack
+docker compose -f docker-compose.wordpress.yml down
+```
+
+Admin access (local only): `http://localhost:8080/wp-admin`  
+User: `admin` | Password: `admin123!`
+
+Optional environment switch: `CMS_FALLBACK_MODE=enabled|disabled`  
+Default behavior: fallback enabled in development, disabled in production.
 
 ### Decision Log (ADR-lite)
 
@@ -93,6 +123,12 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 | D-007 | Centralizar chamadas CMS em `lib/cms` e manter componentes sem `fetch` direto. | Preserva separação de responsabilidades, facilita teste e troca futura de fonte de dados. | Mais arquivos e camadas para manter; requer disciplina para evitar bypass da arquitetura. | Applied |
 | D-008 | Provisionar instância WordPress local própria via Docker para validar a integração com conteúdo controlado. | Garante reprodutibilidade da validação, controle do conteúdo e independência de fontes públicas externas. | Exige Docker/WSL no ambiente local e manutenção de stack auxiliar (MySQL + WordPress). | Applied |
 | D-009 | Consumir WordPress REST API via `rest_route` em vez de depender exclusivamente de `/wp-json`. | Reduz acoplamento com configuração de permalink/rewrite e melhora portabilidade entre instalações WordPress. | URLs de query string ficam menos amigáveis e podem exigir documentação explícita para manutenção futura. | Applied |
+| D-010 | Usar estratégia de ISR (`revalidate`) para Home e páginas públicas de conteúdo. | Equilibra performance e atualização de conteúdo do CMS sem custo de renderização em toda requisição. | Conteúdo pode ficar desatualizado dentro da janela de revalidação. | Applied |
+| D-011 | Centralizar metadados de SEO no App Router (layout + metadata dinâmica por artigo). | Garante consistência de SEO técnico e melhora compartilhamento social com Open Graph/Twitter. | Exige manutenção contínua de campos SEO para evitar metadata genérica. | Applied |
+| D-012 | Gerar `sitemap.xml` e `robots.txt` a partir das rotas e dados reais. | Melhora rastreabilidade por buscadores e demonstra maturidade de produto público. | Requer revisão quando novas rotas públicas forem adicionadas. | Applied |
+| D-013 | Aplicar fallback automático para repositório in-memory quando o CMS estiver indisponível em build/runtime. | Evita quebra do build e mantém rotas públicas operacionais durante indisponibilidade local do WordPress. | Pode mascarar indisponibilidade do CMS se monitoramento não estiver explícito. | Applied |
+| D-014 | Registrar campos SEO customizados no WordPress via MU-plugin e expor na REST API. | Garante fonte editorial explícita para SEO (`seo_title`, `seo_description`, `canonical_url`, `og_image`) sem depender apenas de fallback. | Exige manutenção do plugin e governança de preenchimento no fluxo editorial. | Applied |
+| D-015 | Endurecer pipeline de conteúdo: fallback só em desenvolvimento por padrão e comportamento estrito em produção. | Evita mascarar indisponibilidade de CMS em produção, mantendo DX local com fallback controlado (`CMS_FALLBACK_MODE`). | Configuração incorreta de ambiente pode causar falha de build/runtime até ajuste da variável. | Applied |
 
 **Template (for next decisions):**  
 `Decision:` ... | `Why:` ... | `Risk:` ... | `Status:` ...
@@ -115,6 +151,8 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 | Article SEO | `app/article/[slug]/metadata.ts` | Metadata e SEO do artigo | Article metadata and SEO |
 | Category | `app/category/[slug]/page.tsx` | Página de categoria | Category page |
 | Layout | `app/layout.tsx` | Layout raiz | Root layout |
+| Sitemap | `app/sitemap.ts` | Geração dinâmica de sitemap | Dynamic sitemap generation |
+| Robots | `app/robots.ts` | Regras de indexação e referência de sitemap | Indexing rules and sitemap reference |
 
 ### Reusable Components
 
@@ -141,6 +179,13 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 | `lib/cms/mappers.ts` | Mapeamento de payload WordPress para tipos de domínio | Mapping WordPress payloads to domain types |
 | `lib/cms/types.ts` | Tipos de resposta da API WordPress | WordPress API response types |
 | `lib/cms/errors.ts` | Erros padronizados da camada CMS | Standardized CMS-layer errors |
+| `wordpress/mu-plugins/esp-seo-fields.php` | Registro de campos SEO customizados do WordPress no REST | Registers custom WordPress SEO fields in REST API |
+
+### SEO and Site Config
+
+| File | PT-BR | EN |
+|------|-------|----|
+| `lib/site-config.ts` | URL base do site para canonical, sitemap e robots | Site base URL for canonical, sitemap, and robots |
 
 ### Data Services
 
@@ -148,6 +193,7 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 |------|-------|----|
 | `services/content-repository.ts` | Contrato de repositório de conteúdo | Content repository contract |
 | `services/get-content-repository.ts` | Seleção da implementação de repositório por ambiente | Environment-based repository selection |
+| `services/fallback-content-repository.ts` | Fallback controlado para in-memory quando permitido por ambiente | Controlled in-memory fallback when allowed by environment |
 | `services/in-memory-content-repository.ts` | Implementação in-memory para desenvolvimento inicial | In-memory implementation for early development |
 | `services/wordpress-content-repository.ts` | Implementação do repositório usando WordPress Headless | Repository implementation using WordPress Headless |
 | `services/index.ts` | Barrel de exportação de serviços | Services export barrel |
@@ -190,9 +236,11 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 
 | PT-BR | EN |
 |-------|----|
-| Base técnica e integração inicial com WordPress Headless concluídas: fetch centralizado, tipagem de payload, mapeamento para domínio e fallback in-memory quando `CMS_BASE_URL` não está configurada. | Technical foundation and initial WordPress Headless integration are completed: centralized fetch, typed payloads, domain mapping, and in-memory fallback when `CMS_BASE_URL` is not configured. |
+| Base técnica e integração com WordPress Headless concluídas: fetch centralizado, tipagem de payload, mapeamento para domínio e fallback controlado por ambiente (`CMS_FALLBACK_MODE`). | Technical foundation and WordPress Headless integration are completed: centralized fetch, typed payloads, domain mapping, and environment-controlled fallback (`CMS_FALLBACK_MODE`). |
 | Validação realizada contra instância WordPress local própria (`http://localhost:8080`) com leitura de artigos, autores e categorias reais. | Validation completed against a project-owned local WordPress instance (`http://localhost:8080`) with real posts, authors, and categories. |
-| Integrações avançadas (schema editorial customizado no CMS, autenticação CMS, workflows editoriais, analytics completo e UI final) ainda não foram implementadas. | Advanced integrations (custom editorial CMS schema, CMS authentication, editorial workflows, full analytics, and final UI) are not implemented yet. |
+| Páginas públicas agora possuem fundamentos de SEO técnico: metadata, Open Graph, links semânticos, `sitemap.xml` e `robots.txt`. | Public pages now include technical SEO foundations: metadata, Open Graph, semantic links, `sitemap.xml`, and `robots.txt`. |
+| Campos SEO customizados do WordPress já estão implementados no pipeline e priorizados no mapeamento da camada de conteúdo. | Custom WordPress SEO fields are implemented in the pipeline and prioritized in the content-layer mapping. |
+| Integrações avançadas (autenticação CMS, workflows editoriais e analytics completo) ainda não foram implementadas. | Advanced integrations (CMS authentication, editorial workflows, and full analytics) are not implemented yet. |
 
 ---
 
@@ -200,8 +248,8 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 
 | PT-BR | EN |
 |-------|----|
-| Implementação da interface pública da Home e páginas internas (design system inicial) | Implement the public UI for Home and inner pages (initial design system) |
+| Refinar UI pública da Home e páginas internas com design system inicial | Refine the public UI of Home and inner pages with an initial design system |
 | Evolução do sistema de preview com validação e segurança | Evolve the preview system with validation and security |
-| Evoluir schema do WordPress local para refletir campos editoriais completos (incluindo SEO customizado) | Evolve the local WordPress schema to support full editorial fields (including custom SEO fields) |
+| Evoluir schema do WordPress local para novos campos editoriais além de SEO (ex.: reading time, featured flag, compliance notes) | Evolve the local WordPress schema with new editorial fields beyond SEO (e.g., reading time, featured flag, compliance notes) |
 | Definição e implementação de eventos de analytics | Define and implement analytics events |
 | Escrita e execução de testes automatizados críticos | Write and run critical automated tests |

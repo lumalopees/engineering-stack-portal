@@ -34,4 +34,10 @@ export interface WpPostResponse {
     description?: string;
     canonical?: string;
   };
+  meta?: {
+    seo_title?: string;
+    seo_description?: string;
+    canonical_url?: string;
+    og_image?: string;
+  };
 }

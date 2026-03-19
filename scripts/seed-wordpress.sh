@@ -71,6 +71,26 @@ create_post_if_missing() {
   fi
 }
 
+set_seo_fields_for_post() {
+  slug="$1"
+  seo_title="$2"
+  seo_description="$3"
+  canonical_url="$4"
+  og_image="$5"
+
+  post_id="$(wp post list --name="$slug" --post_type=post --field=ID --format=ids)"
+
+  if [ -z "$post_id" ]; then
+    echo "Warning: post with slug '$slug' not found for SEO field update."
+    return
+  fi
+
+  wp post meta update "$post_id" seo_title "$seo_title" >/dev/null
+  wp post meta update "$post_id" seo_description "$seo_description" >/dev/null
+  wp post meta update "$post_id" canonical_url "$canonical_url" >/dev/null
+  wp post meta update "$post_id" og_image "$og_image" >/dev/null
+}
+
 create_post_if_missing \
   "designing-an-seo-first-content-platform" \
   "Designing an SEO-first Content Platform" \
@@ -111,4 +131,39 @@ create_post_if_missing \
   "How explicit domain types reduce coupling and improve maintainability in Next.js projects." \
   "Applying domain-driven modeling to content platforms."
 
-echo "WordPress seeded successfully with 5 posts, 3 categories, and 3 authors."
+set_seo_fields_for_post \
+  "designing-an-seo-first-content-platform" \
+  "Designing an SEO-first Content Platform | Engineering Stack Portal" \
+  "Architecture foundations and key trade-offs to build an SEO-first editorial platform." \
+  "${SITE_URL}/article/designing-an-seo-first-content-platform" \
+  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
+
+set_seo_fields_for_post \
+  "how-to-structure-slugs-and-taxonomy" \
+  "How to Structure Slugs and Taxonomy | Engineering Stack Portal" \
+  "Practical guidelines for stable slugs and maintainable taxonomy in content-heavy applications." \
+  "${SITE_URL}/article/how-to-structure-slugs-and-taxonomy" \
+  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
+
+set_seo_fields_for_post \
+  "content-preview-workflows-with-headless-cms" \
+  "Content Preview Workflows with Headless CMS | Engineering Stack Portal" \
+  "Preview workflow strategies for editorial teams using a headless CMS architecture." \
+  "${SITE_URL}/article/content-preview-workflows-with-headless-cms" \
+  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80"
+
+set_seo_fields_for_post \
+  "baseline-analytics-events-for-editorial-products" \
+  "Baseline Analytics Events for Editorial Products | Engineering Stack Portal" \
+  "A baseline analytics event model to measure engagement in editorial products." \
+  "${SITE_URL}/article/baseline-analytics-events-for-editorial-products" \
+  "https://images.unsplash.com/photo-1551281044-8b1d7f2df8ad?auto=format&fit=crop&w=1200&q=80"
+
+set_seo_fields_for_post \
+  "domain-driven-content-modeling-in-nextjs" \
+  "Domain-driven Content Modeling in Next.js | Engineering Stack Portal" \
+  "How domain types reduce coupling and improve maintainability in Next.js content platforms." \
+  "${SITE_URL}/article/domain-driven-content-modeling-in-nextjs" \
+  "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1200&q=80"
+
+echo "WordPress seeded successfully with 5 posts, 3 categories, 3 authors, and SEO custom fields."
