@@ -69,6 +69,18 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | 4.3 | `sitemap.xml` e `robots.txt` gerados automaticamente a partir das rotas públicas e conteúdo disponível. | `sitemap.xml` and `robots.txt` automatically generated from public routes and available content. | Done |
 | 4.4 | Campos SEO customizados no WordPress registrados e publicados via REST (`seo_title`, `seo_description`, `canonical_url`, `og_image`) com mapeamento no Next.js. | Custom SEO fields in WordPress registered and exposed via REST (`seo_title`, `seo_description`, `canonical_url`, `og_image`) with mapping in Next.js. | Done |
 
+## Phase 5 Progress
+
+| Etapa | PT-BR | EN | Status |
+|------|-------|----|--------|
+| 5.1 | Testes de renderização implementados para Home, Artigo e Categoria. | Rendering behavior tests implemented for Home, Article, and Category pages. | Done |
+| 5.2 | Testes de erro implementados para slugs inexistentes (`notFound`). | Error behavior tests implemented for non-existing slugs (`notFound`). | Done |
+| 5.3 | Teste de componente crítico implementado (`PageContainer`). | Critical component test implemented (`PageContainer`). | Done |
+| 5.4 | Testes do mapper WordPress implementados para validar prioridade de `meta.seo_*` e fallback seguro. | WordPress mapper tests implemented to validate `meta.seo_*` priority and safe fallback behavior. | Done |
+| 5.5 | Testes de comportamento por ambiente implementados para `CMS_FALLBACK_MODE` (dev vs produção). | Environment behavior tests implemented for `CMS_FALLBACK_MODE` (dev vs production). | Done |
+| 5.6 | Testes de `sitemap` e `robots` implementados para validar rotas SEO técnicas. | `sitemap` and `robots` tests implemented to validate technical SEO routes. | Done |
+| 5.7 | Testes de integração HTTP implementados com MSW para validar pipeline CMS real sem dependência externa. | HTTP integration tests implemented with MSW to validate the real CMS pipeline without external dependency. | Done |
+
 ### WordPress Validation Snapshot (Local Instance)
 
 Validation base URL used in `.env.local`: `http://localhost:8080`
@@ -129,6 +141,10 @@ Default behavior: fallback enabled in development, disabled in production.
 | D-013 | Aplicar fallback automático para repositório in-memory quando o CMS estiver indisponível em build/runtime. | Evita quebra do build e mantém rotas públicas operacionais durante indisponibilidade local do WordPress. | Pode mascarar indisponibilidade do CMS se monitoramento não estiver explícito. | Applied |
 | D-014 | Registrar campos SEO customizados no WordPress via MU-plugin e expor na REST API. | Garante fonte editorial explícita para SEO (`seo_title`, `seo_description`, `canonical_url`, `og_image`) sem depender apenas de fallback. | Exige manutenção do plugin e governança de preenchimento no fluxo editorial. | Applied |
 | D-015 | Endurecer pipeline de conteúdo: fallback só em desenvolvimento por padrão e comportamento estrito em produção. | Evita mascarar indisponibilidade de CMS em produção, mantendo DX local com fallback controlado (`CMS_FALLBACK_MODE`). | Configuração incorreta de ambiente pode causar falha de build/runtime até ajuste da variável. | Applied |
+| D-016 | Priorizar testes de comportamento (renderização e erro) em vez de foco inicial em cobertura percentual. | Demonstra confiabilidade funcional real do produto público e reduz testes frágeis acoplados à implementação interna. | Cobertura numérica pode permanecer moderada até expandir suíte para camadas adicionais. | Applied |
+| D-017 | Adotar `vitest` com testes server-side (`renderToStaticMarkup`) para páginas críticas no App Router. | Mantém execução rápida e simples, validando saída renderizada sem acoplar a suíte a infraestrutura E2E neste estágio. | Não substitui testes end-to-end de navegação real no browser. | Applied |
+| D-018 | Adicionar testes de integração HTTP com MSW para o pipeline CMS WordPress. | Valida contrato de integração (fetch + mapping) com respostas controladas e reproduzíveis em CI/local. | Exige manutenção dos fixtures quando o contrato da API evoluir. | Applied |
+| D-019 | Isolar testes de página de dependências externas com mocks explícitos do repositório de conteúdo. | Evita flakiness por estado de Docker/CMS e mantém feedback rápido e determinístico. | Pode ocultar regressões de integração se não houver suíte complementar (coberta por testes MSW). | Applied |
 
 **Template (for next decisions):**  
 `Decision:` ... | `Why:` ... | `Risk:` ... | `Status:` ...
@@ -222,6 +238,13 @@ Default behavior: fallback enabled in development, disabled in production.
 | `tests/critical/home.test.ts` | Testes da Home | Home page tests |
 | `tests/critical/article.test.ts` | Testes da página de artigo | Article page tests |
 | `tests/critical/category.test.ts` | Testes da página de categoria | Category page tests |
+| `tests/components/page-container.test.tsx` | Teste de componente crítico reutilizável | Reusable critical component test |
+| `tests/cms/mappers.test.ts` | Testes unitários do mapeamento WordPress para domínio | Unit tests for WordPress-to-domain mapping |
+| `tests/services/get-content-repository.test.ts` | Testes de seleção de repositório por ambiente/fallback | Environment/fallback repository selection tests |
+| `tests/seo/sitemap-robots.test.ts` | Testes de geração de sitemap e política de robots | Sitemap generation and robots policy tests |
+| `tests/integration/wordpress-http.integration.test.ts` | Testes de integração HTTP do pipeline CMS com MSW | CMS pipeline HTTP integration tests with MSW |
+| `tests/setup.ts` | Setup de mocks para módulos Next.js nos testes | Test setup with Next.js module mocks |
+| `vitest.config.ts` | Configuração do runner de testes | Test runner configuration |
 
 ### CMS Local Infrastructure
 
@@ -240,6 +263,7 @@ Default behavior: fallback enabled in development, disabled in production.
 | Validação realizada contra instância WordPress local própria (`http://localhost:8080`) com leitura de artigos, autores e categorias reais. | Validation completed against a project-owned local WordPress instance (`http://localhost:8080`) with real posts, authors, and categories. |
 | Páginas públicas agora possuem fundamentos de SEO técnico: metadata, Open Graph, links semânticos, `sitemap.xml` e `robots.txt`. | Public pages now include technical SEO foundations: metadata, Open Graph, semantic links, `sitemap.xml`, and `robots.txt`. |
 | Campos SEO customizados do WordPress já estão implementados no pipeline e priorizados no mapeamento da camada de conteúdo. | Custom WordPress SEO fields are implemented in the pipeline and prioritized in the content-layer mapping. |
+| Fase 5 de testes implementada com foco em comportamento e integração: renderização, erros de rota, ambiente/fallback, SEO routes e pipeline HTTP do CMS. | Phase 5 tests are implemented with behavior and integration focus: rendering, route errors, environment/fallback, SEO routes, and CMS HTTP pipeline. |
 | Integrações avançadas (autenticação CMS, workflows editoriais e analytics completo) ainda não foram implementadas. | Advanced integrations (CMS authentication, editorial workflows, and full analytics) are not implemented yet. |
 
 ---
@@ -252,4 +276,4 @@ Default behavior: fallback enabled in development, disabled in production.
 | Evolução do sistema de preview com validação e segurança | Evolve the preview system with validation and security |
 | Evoluir schema do WordPress local para novos campos editoriais além de SEO (ex.: reading time, featured flag, compliance notes) | Evolve the local WordPress schema with new editorial fields beyond SEO (e.g., reading time, featured flag, compliance notes) |
 | Definição e implementação de eventos de analytics | Define and implement analytics events |
-| Escrita e execução de testes automatizados críticos | Write and run critical automated tests |
+| Adicionar testes end-to-end para navegação e fluxos editoriais críticos em browser real | Add end-to-end tests for navigation and critical editorial flows in a real browser |
