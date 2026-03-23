@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageContainer } from "../../../components";
+import { TrackOnMount } from "../../../lib/analytics/track-on-mount";
 import { getContentRepository } from "../../../services";
 import { generateArticleMetadata } from "./metadata";
 
@@ -22,6 +23,13 @@ export default async function ArticlePage({
 
   return (
     <PageContainer>
+      <TrackOnMount
+        eventName="view_article"
+        params={{
+          article_slug: article.slug,
+          category_slug: article.category.slug
+        }}
+      />
       <article>
         <header>
           <h1>{article.title}</h1>

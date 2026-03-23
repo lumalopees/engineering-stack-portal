@@ -81,6 +81,14 @@ SEO-first editorial portal blueprint for software engineering and digital produc
 | 5.6 | Testes de `sitemap` e `robots` implementados para validar rotas SEO técnicas. | `sitemap` and `robots` tests implemented to validate technical SEO routes. | Done |
 | 5.7 | Testes de integração HTTP implementados com MSW para validar pipeline CMS real sem dependência externa. | HTTP integration tests implemented with MSW to validate the real CMS pipeline without external dependency. | Done |
 
+## Phase 6 Progress
+
+| Etapa | PT-BR | EN | Status |
+|------|-------|----|--------|
+| 6.1 | Page views instrumentados via GA4 com rastreamento por mudança de rota. | Page views instrumented via GA4 with route-change tracking. | Done |
+| 6.2 | Eventos customizados simples implementados para Home, Article e Category. | Simple custom events implemented for Home, Article, and Category. | Done |
+| 6.3 | Integração de analytics protegida para SSR (client-only + guards). | Analytics integration protected for SSR (client-only + guards). | Done |
+
 ### WordPress Validation Snapshot (Local Instance)
 
 Validation base URL used in `.env.local`: `http://localhost:8080`
@@ -94,6 +102,8 @@ Validation base URL used in `.env.local`: `http://localhost:8080`
 | 5 | Designing an SEO-first Content Platform | Ana Costa | `designing-an-seo-first-content-platform` |
 
 SEO meta runtime check (`meta.seo_title`, `meta.seo_description`, `meta.canonical_url`, `meta.og_image`): **5/5 posts OK**.
+
+Build validation with local WordPress online (`http://localhost:8080`): **completed without fallback warnings**.
 
 ### Local WordPress Runtime
 
@@ -145,6 +155,9 @@ Default behavior: fallback enabled in development, disabled in production.
 | D-017 | Adotar `vitest` com testes server-side (`renderToStaticMarkup`) para páginas críticas no App Router. | Mantém execução rápida e simples, validando saída renderizada sem acoplar a suíte a infraestrutura E2E neste estágio. | Não substitui testes end-to-end de navegação real no browser. | Applied |
 | D-018 | Adicionar testes de integração HTTP com MSW para o pipeline CMS WordPress. | Valida contrato de integração (fetch + mapping) com respostas controladas e reproduzíveis em CI/local. | Exige manutenção dos fixtures quando o contrato da API evoluir. | Applied |
 | D-019 | Isolar testes de página de dependências externas com mocks explícitos do repositório de conteúdo. | Evita flakiness por estado de Docker/CMS e mantém feedback rápido e determinístico. | Pode ocultar regressões de integração se não houver suíte complementar (coberta por testes MSW). | Applied |
+| D-020 | Instrumentar GA4 no App Router usando provider client-side com `send_page_view: false`. | Evita chamadas em ambiente SSR e permite controle explícito de page_view por navegação. | Requer manutenção de lógica de tracking por rota para evitar eventos duplicados. | Applied |
+| D-021 | Implementar eventos customizados mínimos de negócio (`view_home`, `view_article`, `view_category`). | Cria base de métricas de consumo de conteúdo sem acoplar analytics à UI de forma excessiva. | Taxonomia inicial é simples e pode exigir evolução para eventos mais granulares. | Applied |
+| D-022 | Tratar analytics como opcional por ambiente via `NEXT_PUBLIC_GA_MEASUREMENT_ID`. | Garante que ausência de GA4 não quebra SSR/build e simplifica execução local/CI. | Se variável não for configurada em produção, não haverá coleta de dados. | Applied |
 
 **Template (for next decisions):**  
 `Decision:` ... | `Why:` ... | `Risk:` ... | `Status:` ...
@@ -230,6 +243,8 @@ Default behavior: fallback enabled in development, disabled in production.
 | `lib/analytics/index.ts` | Entrada do módulo analytics | Analytics module entry point |
 | `lib/analytics/events.ts` | Eventos e tracking | Events and tracking |
 | `lib/analytics/provider.tsx` | Provider de analytics | Analytics provider |
+| `lib/analytics/page-view-tracker.tsx` | Rastreamento de page views por rota no client | Client-side route page-view tracker |
+| `lib/analytics/track-on-mount.tsx` | Disparo de evento customizado no mount de página | Custom event trigger on page mount |
 
 ### Critical Page Tests
 
@@ -243,6 +258,7 @@ Default behavior: fallback enabled in development, disabled in production.
 | `tests/services/get-content-repository.test.ts` | Testes de seleção de repositório por ambiente/fallback | Environment/fallback repository selection tests |
 | `tests/seo/sitemap-robots.test.ts` | Testes de geração de sitemap e política de robots | Sitemap generation and robots policy tests |
 | `tests/integration/wordpress-http.integration.test.ts` | Testes de integração HTTP do pipeline CMS com MSW | CMS pipeline HTTP integration tests with MSW |
+| `tests/analytics/events.test.ts` | Testes de segurança SSR e dispatch de eventos GA4 | SSR safety and GA4 event dispatch tests |
 | `tests/setup.ts` | Setup de mocks para módulos Next.js nos testes | Test setup with Next.js module mocks |
 | `vitest.config.ts` | Configuração do runner de testes | Test runner configuration |
 
@@ -264,7 +280,8 @@ Default behavior: fallback enabled in development, disabled in production.
 | Páginas públicas agora possuem fundamentos de SEO técnico: metadata, Open Graph, links semânticos, `sitemap.xml` e `robots.txt`. | Public pages now include technical SEO foundations: metadata, Open Graph, semantic links, `sitemap.xml`, and `robots.txt`. |
 | Campos SEO customizados do WordPress já estão implementados no pipeline e priorizados no mapeamento da camada de conteúdo. | Custom WordPress SEO fields are implemented in the pipeline and prioritized in the content-layer mapping. |
 | Fase 5 de testes implementada com foco em comportamento e integração: renderização, erros de rota, ambiente/fallback, SEO routes e pipeline HTTP do CMS. | Phase 5 tests are implemented with behavior and integration focus: rendering, route errors, environment/fallback, SEO routes, and CMS HTTP pipeline. |
-| Integrações avançadas (autenticação CMS, workflows editoriais e analytics completo) ainda não foram implementadas. | Advanced integrations (CMS authentication, editorial workflows, and full analytics) are not implemented yet. |
+| Fase 6 implementada com GA4 opcional por ambiente, page views por rota e eventos customizados mínimos de negócio. | Phase 6 is implemented with environment-optional GA4, route-based page views, and minimal custom business events. |
+| Integrações avançadas (autenticação CMS, workflows editoriais e evolução de analytics para funil/conversão) ainda não foram implementadas. | Advanced integrations (CMS authentication, editorial workflows, and analytics evolution to funnel/conversion metrics) are not implemented yet. |
 
 ---
 
@@ -275,5 +292,5 @@ Default behavior: fallback enabled in development, disabled in production.
 | Refinar UI pública da Home e páginas internas com design system inicial | Refine the public UI of Home and inner pages with an initial design system |
 | Evolução do sistema de preview com validação e segurança | Evolve the preview system with validation and security |
 | Evoluir schema do WordPress local para novos campos editoriais além de SEO (ex.: reading time, featured flag, compliance notes) | Evolve the local WordPress schema with new editorial fields beyond SEO (e.g., reading time, featured flag, compliance notes) |
-| Definição e implementação de eventos de analytics | Define and implement analytics events |
+| Evoluir analytics de eventos básicos para métricas de funil, scroll depth e KPI por categoria | Evolve analytics from basic events to funnel metrics, scroll depth, and per-category KPIs |
 | Adicionar testes end-to-end para navegação e fluxos editoriais críticos em browser real | Add end-to-end tests for navigation and critical editorial flows in a real browser |

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageContainer } from "../../../components";
+import { TrackOnMount } from "../../../lib/analytics/track-on-mount";
 import { getContentRepository } from "../../../services";
 
 export const revalidate = 300;
@@ -23,6 +24,13 @@ export default async function CategoryPage({
 
   return (
     <PageContainer>
+      <TrackOnMount
+        eventName="view_category"
+        params={{
+          category_slug: category.slug,
+          article_count: categoryArticles.length
+        }}
+      />
       <section>
         <header>
           <h1>{category.name}</h1>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PageContainer } from "../components";
+import { TrackOnMount } from "../lib/analytics/track-on-mount";
 import { getSiteUrl } from "../lib/site-config";
 import { getContentRepository } from "../services";
 
@@ -30,6 +31,7 @@ export default async function HomePage() {
 
   return (
     <PageContainer>
+      <TrackOnMount eventName="view_home" params={{ article_count: articles.length }} />
       <header>
         <h1>Engineering Stack Portal</h1>
         <p>SEO-first editorial platform for software engineering and digital product content.</p>
